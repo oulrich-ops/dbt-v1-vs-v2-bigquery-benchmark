@@ -7,3 +7,6 @@
 "20261111_170944","v2","D_rebuild","build","2026-11-11 17:09:44.818","2026-11-11 17:10:40.271","55.45","0","pass=27;success=37"
 "20261111_173345","v2","E_new_data_build_complet","build","2026-11-11 17:33:45.806","2026-11-11 17:34:47.765","61.96","0","pass=27;success=37"
 "20261111_173456","v1","E_new_data_selectif","build --select state:modified+ source_status:fresher+ --state state_v1","2026-11-11 17:34:56.236","2026-11-11 17:35:40.534","44.3","0","pass=4;success=8"
+"20261111_181106","v2","S1_state_initial","build --manage-state","2026-11-11 18:11:06.373","2026-11-11 18:12:40.580","94.21","0","pass=27;success=37"
+"20261111_181305","v2","S2_state_sans_changement","build --manage-state","2026-11-11 18:13:05.206","2026-11-11 18:13:34.848","29.64","0","reused=64"
+"20261111_181417","v2","S3_state_nouvelles_donnees","build --manage-state","2026-11-11 18:14:17.478","2026-11-11 18:15:22.040","64.56","0","pass=4;reused=54;success=6"

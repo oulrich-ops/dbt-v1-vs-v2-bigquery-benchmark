@@ -34,13 +34,24 @@ Arrivée d'un jour de données sur une seule source (token_transfers) :
 | Tout reconstruire (`dbt build`) | v2 | 64 | 62,0 s | 50,4 |
 | Seulement le nécessaire (sélection par état) | v1 | 12 | 44,3 s | 9,6 |
 
+Avec dbt State activé (dbt v2, option `--manage-state`) :
+
+| Situation | Noeuds exécutés | Noeuds réutilisés | Temps | Go facturés |
+|---|---|---|---|---|
+| Rebuild sans aucun changement | 0 | 64 | 29,6 s | 1,5 |
+| Un jour de données sur une seule source | 10 | 54 | 64,6 s | 10,4 |
+
+Sans dbt State, ces deux situations coûtaient 49,4 Go et 50,4 Go.
+
 Ce qu'il faut retenir :
 
 - Le parsing est nettement plus rapide en v2, mais on est à 3,6 fois sur 5 000 modèles, pas à 10 fois.
 - Dès que la v1 utilise son cache (parsing partiel), l'écart de parsing disparaît.
 - Le temps de build est presque le même. Le gain de 5 secondes vient du démarrage et du parsing.
 - La facture BigQuery est strictement identique entre v1 et v2.
-- Le vrai levier de coût est de ne pas tout reconstruire : 81 % de Go facturés en moins dans ce test, et cela fonctionne déjà en v1.
+- Le vrai levier de coût est de ne pas tout reconstruire : 81 % de Go facturés en moins dans ce test, et cela fonctionne déjà en v1 avec une sélection manuelle.
+- dbt State obtient le même résultat sans rien sélectionner à la main : 97 % de Go en moins quand rien n'a changé, 79 % quand une seule source a reçu des données.
+- dbt State ne rend pas le build plus rapide quand il y a du travail à faire : 64,6 s contre 44,3 s pour la sélection manuelle en v1, sur une seule mesure.
 
 Les chiffres bruts sont dans `results/metrics.csv`.
 
@@ -49,7 +60,8 @@ Les chiffres bruts sont dans `results/metrics.csv`.
 - Les 5 000 modèles sont générés automatiquement et sont très simples. Un vrai projet avec des macros et des packages peut se comporter autrement.
 - Une seule machine, sous Windows.
 - Le build complet a consommé plus de secondes de slot en v2 (5 376) qu'en v1 (3 483) pour le même SQL. Une seule mesure ne permet pas de dire si cela vient du moteur ou de BigQuery.
-- dbt State (la fonctionnalité de la plateforme dbt) n'a pas été testé ici. La sélection par état utilisée est celle disponible en ligne de commande.
+- dbt State a été testé en local avec un compte dbt gratuit, pas dans un job de la plateforme dbt.
+- Le scénario dbt State a reçu un jour de données de plus que le scénario de sélection manuelle. Les volumes sont proches mais pas strictement identiques.
 
 ## Le projet
 
@@ -219,7 +231,36 @@ Deuxième cas, ne reconstruire que ce qui dépend de la source mise à jour :
 .\scripts\bench.ps1 -Engine v1 -Scenario E_new_data_selectif -DbtArgs "build --select state:modified+ source_status:fresher+ --state state_v1"
 ```
 
-### Étape 13. Récupérer les chiffres
+### Étape 13. Tester dbt State
+
+dbt State fonctionne en local avec un compte dbt gratuit. Connectez-vous une fois :
+
+```powershell
+& "$env:USERPROFILE\.local\bin\dbt.exe" login
+```
+
+Le fichier `dbt_project.yml` règle `lag_tolerance` à 1 minute. Par défaut, dbt State attend 45 minutes avant de reconstruire un modèle dont les données ont changé, ce qui fausserait le test.
+
+Premier build, pour enregistrer l'état de départ :
+
+```powershell
+.\scripts\bench.ps1 -Engine v2 -Scenario S1_state_initial -DbtArgs "build --manage-state"
+```
+
+Rebuild sans aucun changement :
+
+```powershell
+.\scripts\bench.ps1 -Engine v2 -Scenario S2_state_sans_changement -DbtArgs "build --manage-state"
+```
+
+Nouvelles données sur une seule source. Attendez deux minutes après le chargement.
+
+```powershell
+.\scripts\load_raw.ps1 -Start 2024-01-26 -End 2024-01-26 -Sources token_transfers
+.\scripts\bench.ps1 -Engine v2 -Scenario S3_state_nouvelles_donnees -DbtArgs "build --manage-state"
+```
+
+### Étape 14. Récupérer les chiffres
 
 Attendez une minute après le dernier build, puis :
 
@@ -229,7 +270,7 @@ Attendez une minute après le dernier build, puis :
 
 Le script lit l'historique des jobs BigQuery et ajoute à chaque exécution le nombre de jobs, les Go facturés et les secondes de slot. Le résultat est écrit dans `results\metrics.csv`.
 
-### Étape 14. Nettoyer
+### Étape 15. Nettoyer
 
 Pour arrêter les frais de stockage :
 
