@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: eth_raw
+    description: >
+      Tranche du dataset public bigquery-public-data.crypto_ethereum, copiee par
+      scripts/load_raw.ps1. La colonne _loaded_at sert a detecter l'arrivee de
+      nouvelles donnees (fraicheur des sources).
+    schema: "{{ var('raw_dataset') }}"
+    config:
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after: {count: 3650, period: day}
+    tables:
+      - name: transactions
+      - name: token_transfers
+      - name: logs
+      - name: blocks
+      - name: tokens

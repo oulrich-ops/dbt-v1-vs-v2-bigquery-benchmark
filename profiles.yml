@@ -1,0 +1,29 @@
+# Un dataset cible par moteur : eth_v1 (dbt Core 1.x) et eth_v2 (dbt Fusion).
+# Le projet GCP et la cle viennent des variables DBT_BQ_PROJECT et DBT_BQ_KEYFILE
+# (voir env.example.ps1).
+eth_bench:
+  target: v1
+  outputs:
+    v1:
+      type: bigquery
+      method: service-account
+      keyfile: "{{ env_var('DBT_BQ_KEYFILE') }}"
+      project: "{{ env_var('DBT_BQ_PROJECT') }}"
+      dataset: eth_v1
+      location: US
+      threads: 8
+      priority: interactive
+      job_execution_timeout_seconds: 3600
+      # Garde-fou : une requete qui scannerait plus de 150 Go echoue au lieu d'etre facturee
+      maximum_bytes_billed: 150000000000
+    v2:
+      type: bigquery
+      method: service-account
+      keyfile: "{{ env_var('DBT_BQ_KEYFILE') }}"
+      project: "{{ env_var('DBT_BQ_PROJECT') }}"
+      dataset: eth_v2
+      location: US
+      threads: 8
+      priority: interactive
+      job_execution_timeout_seconds: 3600
+      maximum_bytes_billed: 150000000000

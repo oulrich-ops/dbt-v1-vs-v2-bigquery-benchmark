@@ -1,0 +1,24 @@
+name: eth_bench
+version: "1.0.0"
+profile: eth_bench
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+clean-targets: ["target", "target_v1", "target_v2", "dbt_packages"]
+
+vars:
+  raw_dataset: eth_raw
+  # Seuil (en ETH) a partir duquel un transfert est considere comme "whale"
+  whale_threshold_eth: 1000
+
+models:
+  eth_bench:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
+      +materialized: table

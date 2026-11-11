@@ -1,0 +1,13 @@
+.venv/
+target/
+target_v1/
+target_v2/
+state_v1/
+state_v2/
+dbt_packages/
+logs/
+synthetic_project/
+*.json.key
+dbt_internal_packages/
+env.local.ps1
+.user.yml
