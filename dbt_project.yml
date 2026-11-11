@@ -16,6 +16,11 @@ vars:
 
 models:
   eth_bench:
+    # dbt State : par defaut, un modele n'est reconstruit que si son dernier build
+    # date de plus de 45 minutes. On reduit ce delai pour que le test reagisse
+    # tout de suite a l'arrivee de nouvelles donnees.
+    +state:
+      lag_tolerance: "1m"
     staging:
       +materialized: view
     intermediate:
