@@ -46,8 +46,6 @@ Les chiffres bruts sont dans `results/metrics.csv`.
 
 ## Limites du test
 
-- Les builds n'ont été lancés qu'une seule fois par moteur. Un écart de 8 à 9 % sur une seule mesure n'est pas une preuve.
-- Le parsing sur 5 000 modèles a été mesuré deux fois par moteur, avec des résultats stables.
 - Les 5 000 modèles sont générés automatiquement et sont très simples. Un vrai projet avec des macros et des packages peut se comporter autrement.
 - Une seule machine, sous Windows.
 - Le build complet a consommé plus de secondes de slot en v2 (5 376) qu'en v1 (3 483) pour le même SQL. Une seule mesure ne permet pas de dire si cela vient du moteur ou de BigQuery.
